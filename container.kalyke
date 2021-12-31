@@ -25,28 +25,30 @@ RUN echo "c.NotebookApp.allow_remote_access = True" >> $ORG_ROOT/venv/jupyter/et
 RUN mkdir -p $ORG_ROOT/homedir/{venv,src}
 
 RUN useradd --uid 1000 --home-dir $ORG_ROOT/homedir/ --shell /bin/bash developer
-RUN chown -R jupyter /opt/carme/homedir
-RUN chown -R jupyter /opt/carme/venvs/jupyter/share/jupyter/kernels/
-RUN $ORG_ROOT/ven/ncolony/python -m ncolony ctl \
+RUN chown -R developer $ORG_ROOT/homedir
+RUN chown -R developer $ORG_ROOT/venv/jupyter/share/jupyter/kernels/
+RUN $ORG_ROOT/venv/ncolony/bin/python -m ncolony ctl \
     --messages $NCOLONY_ROOT/messages \
     --config $NCOLONY_ROOT/config \
-    add jupyter --cmd /opt/carme/venvs/jupyter/bin/jupyter \
+    add jupyter --cmd $ORG_ROOT/venv/jupyter/bin/jupyter \
     --arg lab \
-    --arg=--config --arg /opt/carme/venvs/jupyter/etc/jupyter/config.py \
+    --arg=--config --arg $ORG_ROOT/venv/jupyter/etc/jupyter/config.py \
+    --arg=--ip --arg 0.0.0.0 \
     --uid=1000 \
-    --env HOME=/opt/carme/homedir \
-    --env WORKON_HOME=/opt/carme/homedir/venvs
+    --env HOME=$ORG_ROOT/homedir \
+    --env WORKON_HOME=$ORG_ROOT/homedir/venv
 
 FROM base as runtime
-COPY --from=builder $ORG_ROOT $ORG_ROOT
-RUN useradd --uid 1000 --home-dir /opt/carme/homedir/ --shell /bin/bash jupyter \
+RUN useradd --uid 1000 --home-dir $ORG_ROOT/homedir/ --shell /bin/bash jupyter \
     && apt-get update \
     && apt-get install -y texlive-latex-recommended texlive-latex-extra \
                           texlive-xetex \
                           poppler-utils \
                           pandoc
+COPY --from=builder $ORG_ROOT $ORG_ROOT
+WORKDIR $ORG_ROOT
 
-ENTRYPOINT ["$ORG_ROOT/venvs/ncolony/bin/python", \
+ENTRYPOINT ["./venv/ncolony/bin/python", \
             "-m", "twisted", "ncolony", \
-            "--messages", "$ORG_ROOT/ncolony/messages", \
-            "--conf", "$ORG_ROOT/ncolony/config"]
+            "--messages", "./ncolony/messages", \
+            "--conf", "./ncolony/config"]
