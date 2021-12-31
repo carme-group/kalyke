@@ -1,0 +1,52 @@
+# Install sources
+FROM python:3 as base
+ENV ORG_ROOT=/opt/kalyke
+
+FROM base as builder
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
+RUN python -m venv $ORG_ROOT/venv/jupyter
+RUN python -m venv $ORG_ROOT/venv/ncolony
+
+ENV NCOLONY_ROOT=$ORG_ROOT/ncolony
+RUN mkdir -p $NCOLONY_ROOT/config $NCOLONY_ROOT/messages
+
+RUN $ORG_ROOT/venv/jupyter/bin/python -m pip install --upgrade pip
+RUN $ORG_ROOT/venv/jupyter/bin/python -m pip install pycus jupyterlab
+
+RUN $ORG_ROOT/venv/ncolony/bin/python -m pip install --upgrade pip
+RUN $ORG_ROOT/venv/ncolony/bin/python -m pip install ncolony
+
+RUN $ORG_ROOT/venv/jupyter/bin/jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+RUN echo "c.NotebookApp.notebook_dir = '$ORG_ROOT/homedir/src'" >> $ORG_ROOT/venv/jupyter/etc/jupyter/config.py
+RUN echo "c.NotebookApp.allow_remote_access = True" >> $ORG_ROOT/venv/jupyter/etc/jupyter/config.py
+
+RUN mkdir -p $ORG_ROOT/homedir/{venv,src}
+
+RUN useradd --uid 1000 --home-dir $ORG_ROOT/homedir/ --shell /bin/bash developer
+RUN chown -R jupyter /opt/carme/homedir
+RUN chown -R jupyter /opt/carme/venvs/jupyter/share/jupyter/kernels/
+RUN $ORG_ROOT/ven/ncolony/python -m ncolony ctl \
+    --messages $NCOLONY_ROOT/messages \
+    --config $NCOLONY_ROOT/config \
+    add jupyter --cmd /opt/carme/venvs/jupyter/bin/jupyter \
+    --arg lab \
+    --arg=--config --arg /opt/carme/venvs/jupyter/etc/jupyter/config.py \
+    --uid=1000 \
+    --env HOME=/opt/carme/homedir \
+    --env WORKON_HOME=/opt/carme/homedir/venvs
+
+FROM base as runtime
+COPY --from=builder $ORG_ROOT $ORG_ROOT
+RUN useradd --uid 1000 --home-dir /opt/carme/homedir/ --shell /bin/bash jupyter \
+    && apt-get update \
+    && apt-get install -y texlive-latex-recommended texlive-latex-extra \
+                          texlive-xetex \
+                          poppler-utils \
+                          pandoc
+
+ENTRYPOINT ["$ORG_ROOT/venvs/ncolony/bin/python", \
+            "-m", "twisted", "ncolony", \
+            "--messages", "$ORG_ROOT/ncolony/messages", \
+            "--conf", "$ORG_ROOT/ncolony/config"]
