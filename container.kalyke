@@ -22,7 +22,7 @@ RUN $ORG_ROOT/venv/jupyter/bin/jupyter labextension install @jupyter-widgets/jup
 RUN echo "c.NotebookApp.notebook_dir = '$ORG_ROOT/homedir/src'" >> $ORG_ROOT/venv/jupyter/etc/jupyter/config.py
 RUN echo "c.NotebookApp.allow_remote_access = True" >> $ORG_ROOT/venv/jupyter/etc/jupyter/config.py
 
-RUN mkdir -p $ORG_ROOT/homedir/{venv,src}
+RUN mkdir -p $ORG_ROOT/homedir/venv $ORG_ROOT/homedir/src/
 
 RUN useradd --uid 1000 --home-dir $ORG_ROOT/homedir/ --shell /bin/bash developer
 RUN chown -R developer $ORG_ROOT/homedir
@@ -39,7 +39,7 @@ RUN $ORG_ROOT/venv/ncolony/bin/python -m ncolony ctl \
     --env WORKON_HOME=$ORG_ROOT/homedir/venv
 
 FROM base as runtime
-RUN useradd --uid 1000 --home-dir $ORG_ROOT/homedir/ --shell /bin/bash jupyter \
+RUN useradd --uid 1000 --home-dir $ORG_ROOT/homedir/ --shell /bin/bash developer \
     && apt-get update \
     && apt-get install -y texlive-latex-recommended texlive-latex-extra \
                           texlive-xetex \
