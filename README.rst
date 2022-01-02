@@ -5,6 +5,7 @@ TODO:
 * Add starship.rs (with reasonable configuration)
 * Add /opt/kalyke/venv/jupyter/bin/ to the PATH
 * Put virtualenvwrapper in /opt/kalyke/venv/jupyter/bin/
+* Make /opt/kalyke/homedir/.ssh with ownership developer and permissions 700
 
 Kalyke is smaller moon of Jupiter,
 part of the Carme group.
