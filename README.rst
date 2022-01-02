@@ -3,7 +3,8 @@ Kalyke
 
 TODO:
 * Add starship.rs (with reasonable configuration)
-* ADd /opt/kalyke/venv/jupyter/bin/ to the PATH
+* Add /opt/kalyke/venv/jupyter/bin/ to the PATH
+* Put virtualenvwrapper in /opt/kalyke/venv/jupyter/bin/
 
 Kalyke is smaller moon of Jupiter,
 part of the Carme group.
