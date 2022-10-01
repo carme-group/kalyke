@@ -4,7 +4,8 @@ ENV ORG_ROOT=/opt/kalyke
 
 FROM base as builder
 RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get install -y nodejs
+RUN apt-get update
+RUN apt-get install -y nodejs npm
 RUN python -m venv --system-site-packages $ORG_ROOT/venv/jupyter
 RUN python -m venv $ORG_ROOT/venv/ncolony
 
@@ -18,7 +19,7 @@ RUN $ORG_ROOT/venv/jupyter/bin/python -m pip install \
                                                      virtualenvwrapper
 
 RUN $ORG_ROOT/venv/ncolony/bin/python -m pip install --upgrade pip
-RUN $ORG_ROOT/venv/ncolony/bin/python -m pip install ncolony
+RUN $ORG_ROOT/venv/ncolony/bin/python -m pip install gather==17.5.0 ncolony
 
 RUN $ORG_ROOT/venv/jupyter/bin/jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
