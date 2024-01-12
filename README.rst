@@ -17,7 +17,7 @@ one.
 
 .. code::
 
-    $ docker run -d --name kalyke -p 8888:8888 quay.io/jsconway/kalyke
+    $ docker run -d --name kalyke -p 8888:8888 -p 8000:8000 moshez/kalyke:3.12
     $ docker exec -u developer kalyke \
      /opt/kalyke/venv/jupyter/bin/jupyter server list
     Currently running servers:
